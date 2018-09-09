@@ -1,0 +1,6 @@
+[package]
+name = "tiny-tsdb"
+version = "0.1.0"
+authors = ["Christopher Henn <chris@chrishenn.net>"]
+
+[dependencies]
