@@ -1,0 +1,7 @@
+Char = { ASCII_ALPHANUMERIC | "." | "_" | "/" | "-" }
+
+String = { "\"" ~ Char+ ~ "\"" }
+
+Assignment = { String ~ "=" ~ String }
+
+TagSet = { Assignment ~ ("," ~ Assignment)* }
