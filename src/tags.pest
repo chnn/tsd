@@ -5,3 +5,23 @@ String = { "\"" ~ Char+ ~ "\"" }
 Assignment = { String ~ "=" ~ String }
 
 TagSet = { Assignment ~ ("," ~ Assignment)* }
+
+Equals = { "==" }
+
+NotEquals = { "!=" }
+
+EqualityOp = _{ Equals | NotEquals }
+
+Equality = { String ~ EqualityOp ~ String }
+
+And = { "and" }
+
+Or = { "or" }
+
+LogicalOp = _{ And | Or }
+
+Logical = { Equality ~ (LogicalOp ~ Logical)* }
+
+Parens = { "(" ~ Logical ~ ")" }
+
+WHITESPACE = _{" " | "\t" | "\r" | "\n"}

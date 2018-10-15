@@ -1,11 +1,11 @@
 use chrono::prelude::*;
 use std::collections::HashMap;
 
-use tags::{Identifiable, TagSet, TagSetID};
+use tags::TagSet;
 
 pub struct DB {
     config: Config,
-    hot_slabs: HashMap<TagSetID, Vec<Slab>>,
+    hot_slabs: HashMap<String, Vec<Slab>>,
 }
 
 pub struct Config {
@@ -46,7 +46,7 @@ impl Slab {
 
 impl DB {
     pub fn new(config: Config) -> DB {
-        let hot_slabs: HashMap<TagSetID, Vec<Slab>> = HashMap::new();
+        let hot_slabs: HashMap<String, Vec<Slab>> = HashMap::new();
 
         return DB { config, hot_slabs };
     }
@@ -112,14 +112,13 @@ impl DB {
 #[cfg(test)]
 mod test {
     use super::*;
-    use tags::parse_tag_set;
 
     #[test]
     fn write_then_read_series() {
         let mut db = DB::new(Config { slab_duration: 10 });
 
-        let tag_set_a = parse_tag_set(r#""a" = "A", "b" = "B""#);
-        let tag_set_b = parse_tag_set(r#""b" = "B", "c" = "C""#);
+        let tag_set_a = TagSet::parse(r#""a" = "A", "b" = "B""#);
+        let tag_set_b = TagSet::parse(r#""b" = "B", "c" = "C""#);
 
         // for `tag_set_a`, write the series
         //
