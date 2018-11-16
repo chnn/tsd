@@ -25,6 +25,17 @@ struct Equality {
     rhs: String,
 }
 
+impl Equality {
+    fn test(&self, tag_set: &TagSet) -> bool {
+        let is_equal = tag_set.get(&self.lhs) == tag_set.get(&self.rhs);
+
+        match self.op {
+            EqualityOp::Equals => is_equal,
+            EqualityOp::NotEquals => !is_equal,
+        }
+    }
+}
+
 #[derive(PartialEq, Debug)]
 enum LogicalOp {
     And,
@@ -38,7 +49,7 @@ enum Logical {
 }
 
 impl Logical {
-    fn parse(input: &str) -> Logical {
+    fn parse(input: &str) -> Result<Logical, ()> {
         let mut rules = TagsParser::parse(Rule::Logical, input)
             .unwrap() // fixme
             .next()
@@ -72,7 +83,7 @@ impl Logical {
         let maybe_op = rules.next();
 
         if maybe_op.is_none() {
-            return Logical::Just(equality);
+            return Ok(Logical::Just(equality));
         }
 
         let op = match maybe_op.unwrap().as_rule() {
@@ -83,7 +94,15 @@ impl Logical {
 
         let next = rules.next().unwrap().as_str();
 
-        return Logical::Also(equality, op, Box::new(Logical::parse(next)));
+        return Ok(Logical::Also(equality, op, Box::new(Logical::parse(next)?)));
+    }
+
+    fn test(&self, tag_set: &TagSet) -> bool {
+        match self {
+            Logical::Just(eq) => eq.test(tag_set),
+            Logical::Also(eq, LogicalOp::And, tail) => eq.test(tag_set) && tail.test(tag_set),
+            Logical::Also(eq, LogicalOp::Or, tail) => eq.test(tag_set) || tail.test(tag_set),
+        }
     }
 }
 
@@ -142,27 +161,6 @@ impl TagSet {
 
     pub fn get(&self, key: &str) -> Option<&String> {
         self.tags.get(key)
-    }
-
-    fn matches_logical(&self, logical: Logical) -> bool {
-        match logical {
-            Logical::Just(eq) => self.matches_eq(eq),
-            Logical::Also(eq, LogicalOp::And, tail) => {
-                self.matches_eq(eq) && self.matches_logical(*tail)
-            }
-            Logical::Also(eq, LogicalOp::Or, tail) => {
-                self.matches_eq(eq) || self.matches_logical(*tail)
-            }
-        }
-    }
-
-    fn matches_eq(&self, equality: Equality) -> bool {
-        let is_equal = self.get(&equality.lhs) == self.get(&equality.rhs);
-
-        match equality.op {
-            EqualityOp::Equals => is_equal,
-            EqualityOp::NotEquals => !is_equal,
-        }
     }
 }
 
